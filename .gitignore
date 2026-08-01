@@ -1,0 +1,3 @@
+build-git-history.sh
+__pycache__/
+*.pyc
