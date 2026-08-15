@@ -1,0 +1,134 @@
+<Sysmon schemaversion="4.90">
+  <!--
+    Alpine Project Targeted Sysmon Configuration
+    Purpose: Lean, high-fidelity configuration tailored to capture the full lifecycle
+             of the Alpine attack chain while filtering enterprise noise.
+    Key MITRE ATT&CK Techniques Tracked:
+    - T1059.001: PowerShell Execution (Parent/Child chaining, Unmanaged PowerShell)
+    - T1055.002: Process Injection into explorer.exe (CreateRemoteThread, ProcessAccess)
+    - T1558.004: AS-REP Roasting & Kerberos Traffic via Non-Standard Binaries (EID 3 Port 88)
+    - T1566.001: Spearphishing Attachment Downloads (File Creation & Mark of the Web)
+    - T1071.001: C2 Beaconing Telemetry (Port 443 Outbound)
+  -->
+
+  <!-- Hash Algorithms: SHA256 and IMPHASH for executable fingerprinting -->
+  <HashAlgorithms>SHA256,IMPHASH</HashAlgorithms>
+  <CheckRevocation/>
+
+  <EventFiltering>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 1: Process Creation                                      -->
+    <!-- Captures process lineage, ParentProcessGuid, and command lines    -->
+    <!-- ================================================================= -->
+    <RuleGroup name="ProcessCreation" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <!-- Track Office productivity suite spawning script interpreters -->
+        <ParentImage condition="image">winword.exe</ParentImage>
+        <ParentImage condition="image">excel.exe</ParentImage>
+        <ParentImage condition="image">powerpnt.exe</ParentImage>
+        
+        <!-- Track shell and scripting engine executions -->
+        <Image condition="image">powershell.exe</Image>
+        <Image condition="image">pwsh.exe</Image>
+        <Image condition="image">cmd.exe</Image>
+        <Image condition="image">wscript.exe</Image>
+        <Image condition="image">cscript.exe</Image>
+        <Image condition="image">mshta.exe</Image>
+        <Image condition="image">schtasks.exe</Image>
+
+        <!-- Track credential and staging utilities -->
+        <Image condition="image">rundll32.exe</Image>
+        <Image condition="image">certutil.exe</Image>
+        <Image condition="image">regsvr32.exe</Image>
+
+        <!-- Specific hunt: Any execution occurring from Downloads or Temp directories -->
+        <CommandLine condition="contains">\Downloads\</CommandLine>
+        <CommandLine condition="contains">\AppData\Local\Temp\</CommandLine>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 3: Network Connection                                    -->
+    <!-- Detects Kerberos anomalies and outbound C2 beacons                -->
+    <!-- ================================================================= -->
+    <RuleGroup name="NetworkConnections" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <!-- ANOMALOUS KERBEROS: Alert on Kerberos port 88 originating from anything other than LSASS -->
+        <DestinationPort condition="is">88</DestinationPort>
+
+        <!-- C2 BEACONING: Track outbound connections to external ports from native apps -->
+        <DestinationPort condition="is">443</DestinationPort>
+        <DestinationPort condition="is">80</DestinationPort>
+      </NetworkConnect>
+      <NetworkConnect onmatch="exclude">
+        <!-- Exclude known legitimate noise on port 443 (e.g. Windows Update, Defender) -->
+        <Image condition="image">MsMpEng.exe</Image>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 7: Image Loaded (Module / DLL Loads)                     -->
+    <!-- Detects Unmanaged PowerShell in non-.NET binaries like winword.exe-->
+    <!-- ================================================================= -->
+    <RuleGroup name="ImageLoads" groupRelation="or">
+      <ImageLoad onmatch="include">
+        <!-- Detect CLR / PowerShell engines loaded inside Office or explorer.exe -->
+        <ImageLoaded condition="contains">clr.dll</ImageLoaded>
+        <ImageLoaded condition="contains">clrjit.dll</ImageLoaded>
+        <ImageLoaded condition="contains">System.Management.Automation.dll</ImageLoaded>
+        <ImageLoaded condition="contains">System.Management.Automation.ni.dll</ImageLoaded>
+      </ImageLoad>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 8: CreateRemoteThread                                    -->
+    <!-- Detects cross-process injection (e.g. into explorer.exe)          -->
+    <!-- ================================================================= -->
+    <RuleGroup name="CreateRemoteThread" groupRelation="or">
+      <CreateRemoteThread onmatch="include">
+        <!-- Flag any remote thread injected into explorer.exe or svchost.exe -->
+        <TargetImage condition="image">explorer.exe</TargetImage>
+        <TargetImage condition="image">svchost.exe</TargetImage>
+        <TargetImage condition="image">lsass.exe</TargetImage>
+      </CreateRemoteThread>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 10: ProcessAccess                                        -->
+    <!-- Detects memory inspection / injection (PROCESS_VM_READ/WRITE)     -->
+    <!-- ================================================================= -->
+    <RuleGroup name="ProcessAccess" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <!-- Detect access targeting LSASS or Explorer -->
+        <TargetImage condition="image">lsass.exe</TargetImage>
+        <TargetImage condition="image">explorer.exe</TargetImage>
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 11: FileCreate                                           -->
+    <!-- Detects dropped payloads and weaponized office files              -->
+    <!-- ================================================================= -->
+    <RuleGroup name="FileCreation" groupRelation="or">
+      <FileCreate onmatch="include">
+        <!-- Track macro-enabled documents, PowerShell scripts, and archives -->
+        <TargetFilename condition="end with">.docm</TargetFilename>
+        <TargetFilename condition="end with">.xlsm</TargetFilename>
+        <TargetFilename condition="end with">.zip</TargetFilename>
+        <TargetFilename condition="end with">.iso</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- ================================================================= -->
+    <!-- Event ID 15: FileCreateStreamHash (Mark of the Web)               -->
+    <!-- Detects downloads from the internet via Zone.Identifier           -->
+    <!-- ================================================================= -->
+    <RuleGroup name="FileStreamCreation" groupRelation="or">
+      <FileCreateStreamHash onmatch="include">
+        <TargetFilename condition="contains">:Zone.Identifier</TargetFilename>
+      </FileCreateStreamHash>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>
