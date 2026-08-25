@@ -1,0 +1,69 @@
+%YAML 1.1
+---
+# Alpine Lab Suricata IDS/IPS Configuration
+default-log-dir: /var/log/suricata/
+
+vars:
+  address-groups:
+    # Scoped to the lab's protected subnet only. The attacker host
+    # (192.168.100.50 -- see docs/02-threat-model-and-attack/attack-chain.md)
+    # deliberately lives outside this range so EXTERNAL_NET actually covers
+    # it. A broader RFC1918 HOME_NET (192.168.0.0/16, 172.16.0.0/12) would
+    # silently include the attacker's own subnet and the JA4 C2 rule below
+    # (HOME_NET -> EXTERNAL_NET) would never match.
+    HOME_NET: "[10.0.0.0/8]"
+    EXTERNAL_NET: "!$HOME_NET"
+    HTTP_SERVERS: "$HOME_NET"
+    # Not yet referenced by any rule in local.rules; kept for future
+    # DC-specific signatures (e.g. LDAP/Kerberos rules scoped to the DC).
+    DC_SERVERS: "[10.0.0.10]"
+
+af-packet:
+  - interface: veth-promisc
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+    use-mmap: yes
+    mmap-locked: yes
+    tpacket-v3: yes
+    ring-size: 4096
+
+default-rule-path: /etc/suricata/rules
+rule-files:
+  - local.rules
+
+outputs:
+  - fast:
+      enabled: no
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      # Community ID enables seamless correlation with Zeek conn.log in Splunk
+      community-id: true
+      community-id-seed: 0
+      types:
+        - alert:
+            payload: no
+            packet: no
+            metadata: yes
+            tagged-packets: no
+        - tls:
+            extended: yes
+            # JA4 calculation on TLS Client Hello
+            ja4: true
+        - dns:
+            version: 2
+        - http:
+            extended: yes
+
+# Advanced Stream Engine Tuning
+stream:
+  memcap: 128mb
+  checksum-validation: no
+  inline: no
+  reassembly:
+    memcap: 256mb
+    depth: 1mb
+    toserver-chunk-size: 2560
+    toclient-chunk-size: 2560
