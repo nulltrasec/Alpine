@@ -1,0 +1,30 @@
+{
+  "SilkServiceConfig": {
+    "Description": "Alpine Project SilkETW Kernel Collector for LDAP Reconnaissance Detection",
+    "ETWProviders": [
+      {
+        "ProviderName": "Microsoft-Windows-LDAP-Client",
+        "ProviderGuid": "099614a5-cde7-4cc8-8096-d766e8141fae",
+        "Keywords": "0x8000000000000000",
+        "CaptureData": true,
+        "Yara": {
+          "Path": "C:\\Program Files\\SilkETW\\rules\\sharphound-ldap.yar",
+          "Engine": "Yara",
+          "MatchAction": "Log"
+        },
+        "Filter": {
+          "EventName": [
+            "SearchRequest",
+            "SearchResponse"
+          ]
+        }
+      }
+    ],
+    "OutputOptions": {
+      "OutputFormat": "json",
+      "Path": "C:\\ProgramData\\SilkETW\\logs\\silketw_ldap.json",
+      "LogToEventLog": true,
+      "EventLogName": "SilkETW-Operational"
+    }
+  }
+}
