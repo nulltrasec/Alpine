@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 1340" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a3f47"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2564d6"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f8a54"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b5680d"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1760" height="1340" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="880" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#1a1d22">Project Alpine — Network &amp; Role Topology</text>
+  <text x="880" y="66" text-anchor="middle" font-size="14" fill="#6b7280">One Arch Linux host running three logical roles, separated by two isolated virtual switches</text>
+
+  <!-- ================= ARCH HOST CONTAINER ================= -->
+  <rect x="40" y="100" width="480" height="880" rx="14" fill="none" stroke="#9aa1ac" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="280" y="130" text-anchor="middle" font-size="15" font-weight="700" fill="#3a3f47" letter-spacing="1">ARCH LINUX HYPERVISOR HOST</text>
+
+  <!-- Attacker box -->
+  <rect x="80" y="150" width="400" height="150" rx="10" fill="#fbfbfc" stroke="#3a3f47" stroke-width="2"/>
+  <text x="280" y="185" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">Metasploit</text>
+  <text x="280" y="208" text-anchor="middle" font-size="13" fill="#4a4f57">Attacker interface — V.S 1</text>
+  <text x="280" y="229" text-anchor="middle" font-size="13" fill="#4a4f57">192.168.100.50</text>
+  <text x="280" y="265" text-anchor="middle" font-size="12" fill="#c23a2e" font-style="italic">generates weaponized .docm payload</text>
+
+  <!-- Sensor box -->
+  <rect x="80" y="360" width="400" height="210" rx="10" fill="#fbfbfc" stroke="#3a3f47" stroke-width="2"/>
+  <text x="280" y="393" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">Zeek + Suricata</text>
+  <text x="280" y="416" text-anchor="middle" font-size="13" fill="#4a4f57">Promiscuous sensor — off V.S 1</text>
+  <text x="280" y="437" text-anchor="middle" font-size="13" fill="#4a4f57">IP: N/A (passive tap, no address)</text>
+  <line x1="120" y1="456" x2="440" y2="456" stroke="#d8dbe0" stroke-width="1"/>
+  <text x="280" y="480" text-anchor="middle" font-size="13" fill="#2564d6" font-weight="600">dumpcap / Wireshark capture</text>
+  <text x="280" y="500" text-anchor="middle" font-size="12" fill="#4a4f57">used ad hoc for packet-level verification</text>
+  <text x="280" y="537" text-anchor="middle" font-size="11" fill="#9aa1ac" font-style="italic">(not an always-on/rotating service — no script in src/)</text>
+
+  <!-- SOC box -->
+  <rect x="80" y="660" width="400" height="210" rx="10" fill="#fbfbfc" stroke="#3a3f47" stroke-width="2"/>
+  <text x="280" y="693" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">Splunk + Micro-SOAR</text>
+  <text x="280" y="716" text-anchor="middle" font-size="13" fill="#4a4f57">Management interface — off V.S 2</text>
+  <text x="280" y="737" text-anchor="middle" font-size="13" fill="#4a4f57">10.254.2.100</text>
+  <line x1="120" y1="756" x2="440" y2="756" stroke="#d8dbe0" stroke-width="1"/>
+  <text x="280" y="780" text-anchor="middle" font-size="12" fill="#4a4f57">Splunk RBA correlation</text>
+  <text x="280" y="801" text-anchor="middle" font-size="12" fill="#1f8a54" font-weight="600">→ Flask webhook → WinRM inline quarantine PS</text>
+
+  <!-- Arch host multi-IP note -->
+  <text x="280" y="915" text-anchor="middle" font-size="11" fill="#9aa1ac" font-style="italic">host binds BOTH 10.254.2.1 (gateway VIP) and 10.254.2.100 (real)</text>
+  <text x="280" y="932" text-anchor="middle" font-size="11" fill="#9aa1ac" font-style="italic">so iptables has two distinct addresses to DNAT/SNAT between</text>
+
+  <!-- ================= SWITCHES ================= -->
+  <rect x="780" y="195" width="130" height="76" rx="8" fill="#eef2ff" stroke="#3a3f47" stroke-width="2"/>
+  <text x="845" y="227" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1d22">V.S 1</text>
+  <text x="845" y="247" text-anchor="middle" font-size="11" fill="#4a4f57">Operational plane</text>
+
+  <rect x="780" y="700" width="130" height="76" rx="8" fill="#eafaf0" stroke="#3a3f47" stroke-width="2"/>
+  <text x="845" y="732" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1d22">V.S 2</text>
+  <text x="845" y="752" text-anchor="middle" font-size="11" fill="#4a4f57">Management plane</text>
+
+  <!-- ================= RIGHT SIDE TARGETS ================= -->
+  <rect x="1160" y="100" width="420" height="210" rx="10" fill="#fbfbfc" stroke="#3a3f47" stroke-width="2"/>
+  <text x="1370" y="136" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">AD Domain Controller</text>
+  <text x="1370" y="159" text-anchor="middle" font-size="13" fill="#4a4f57">10.0.0.10 · ALPINE.INTERNAL</text>
+  <line x1="1200" y1="178" x2="1540" y2="178" stroke="#d8dbe0" stroke-width="1"/>
+  <text x="1370" y="202" text-anchor="middle" font-size="12" fill="#4a4f57">NIC1 (V.S1): Kerberos · LDAP · SMB</text>
+  <text x="1370" y="223" text-anchor="middle" font-size="12" fill="#4a4f57">NIC2 (V.S2): Splunk UF · WinRM</text>
+  <text x="1370" y="252" text-anchor="middle" font-size="12" fill="#1a1d22" font-weight="600">hosts honeytoken: svc_sql_prod_migration</text>
+  <text x="1370" y="272" text-anchor="middle" font-size="11" fill="#4a4f57">(DONT_REQ_PREAUTH — AS-REP roast bait)</text>
+
+  <rect x="1160" y="430" width="420" height="230" rx="10" fill="#fbfbfc" stroke="#3a3f47" stroke-width="2"/>
+  <text x="1370" y="466" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">HR-01 / WIN.VM</text>
+  <text x="1370" y="489" text-anchor="middle" font-size="13" fill="#4a4f57">10.0.0.15</text>
+  <line x1="1200" y1="508" x2="1540" y2="508" stroke="#d8dbe0" stroke-width="1"/>
+  <text x="1370" y="532" text-anchor="middle" font-size="12" fill="#4a4f57">NIC1 (V.S1): web + Meterpreter C2 (443)</text>
+  <text x="1370" y="553" text-anchor="middle" font-size="12" fill="#4a4f57">NIC2 (V.S2): Splunk UF · WinRM</text>
+  <text x="1370" y="581" text-anchor="middle" font-size="12" fill="#1a1d22" font-weight="600">Sysmon + PowerShell Script Block Logging</text>
+  <text x="1370" y="601" text-anchor="middle" font-size="11" fill="#4a4f57">EIDs 1,3,7,8,10,11,15 · EID 4104</text>
+
+  <!-- ================= OPERATIONAL PLANE — GRAY, straight ================= -->
+  <!-- Attacker -> V.S1 (single straight horizontal, ports aligned) -->
+  <line x1="480" y1="225" x2="780" y2="225" stroke="#3a3f47" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- V.S1 -> AD DC (single straight horizontal, ports aligned) -->
+  <line x1="910" y1="198" x2="1160" y2="198" stroke="#3a3f47" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <text x="1035" y="184" text-anchor="middle" font-size="12" fill="#3a3f47">Kerberos 88 · LDAP 389/636</text>
+
+  <!-- V.S1 -> WIN.VM (single straight diagonal) -->
+  <line x1="910" y1="255" x2="1160" y2="532" stroke="#3a3f47" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <text x="1000" y="308" text-anchor="middle" font-size="12" fill="#3a3f47">443 — web + Meterpreter C2</text>
+  <text x="1000" y="326" text-anchor="middle" font-size="11" fill="#c23a2e" font-style="italic">+ spearphishing delivery (invoice.docm)</text>
+
+  <!-- ================= TC MIRROR — BLUE, straight, orthogonal ================= -->
+  <polyline points="830,271 830,410 480,410" fill="none" stroke="#2564d6" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+  <text x="845" y="345" font-size="12" fill="#2564d6" font-weight="600">tc mirred</text>
+  <text x="845" y="363" font-size="11" fill="#2564d6">egress packet clone</text>
+
+  <!-- ================= MANAGEMENT PLANE — GREEN, straight ================= -->
+  <!-- SOC -> V.S2 (single straight horizontal, ports aligned) -->
+  <line x1="480" y1="730" x2="780" y2="730" stroke="#1f8a54" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="630" y="714" text-anchor="middle" font-size="12" fill="#1f8a54">10.254.2.1 VIP</text>
+
+  <!-- V.S2 -> WIN.VM (single straight diagonal) -->
+  <line x1="820" y1="700" x2="1160" y2="553" stroke="#1f8a54" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="900" y="622" text-anchor="middle" font-size="12" fill="#1f8a54">Splunk UF 9997 · WinRM 5985</text>
+
+  <!-- V.S2 -> AD DC (routed around the right, straight orthogonal segments — avoids crossing the WIN.VM line above) -->
+  <polyline points="910,715 1660,715 1660,223 1580,223" fill="none" stroke="#1f8a54" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="1300" y="672" text-anchor="middle" font-size="11" fill="#1f8a54">(routed to the DC via the SOC gateway)</text>
+  <text x="1300" y="692" text-anchor="middle" font-size="12" fill="#1f8a54">Splunk UF 9997 · WinRM 5985</text>
+
+  <!-- NAT callout -->
+  <rect x="960" y="800" width="430" height="150" rx="10" fill="#f4fbf6" stroke="#1f8a54" stroke-width="1.5"/>
+  <text x="980" y="828" font-size="13" font-weight="700" fill="#1f8a54">iptables @ gateway VIP (10.254.2.1)</text>
+  <text x="980" y="853" font-size="12" fill="#2a2f37">PREROUTING  DNAT  9997 → 10.254.2.100:9997</text>
+  <text x="995" y="870" font-size="11" fill="#6b7280">(inbound log shipping — real Splunk IP stays hidden)</text>
+  <text x="980" y="895" font-size="12" fill="#2a2f37">POSTROUTING SNAT  5985 src → 10.254.2.1</text>
+  <text x="995" y="912" font-size="11" fill="#6b7280">(outbound WinRM containment — hides SOC IP from adversary)</text>
+  <text x="980" y="935" font-size="11" fill="#9aa1ac" font-style="italic">managed on V.S 2's gateway interface</text>
+  <line x1="930" y1="815" x2="958" y2="822" stroke="#1f8a54" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- ================= PHISHING EMAIL TRIAGE (post-incident addition) ================= -->
+  <rect x="1160" y="985" width="420" height="115" rx="10" fill="#fdf7ee" stroke="#b5680d" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="1370" y="1015" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1d22">Phishing Email Triage</text>
+  <text x="1370" y="1037" text-anchor="middle" font-size="12" fill="#4a4f57">src/email-triage/phishing-ip-triage.py</text>
+  <text x="1370" y="1057" text-anchor="middle" font-size="12" fill="#4a4f57">IMAP unseen-mail scan → Received-header IPs → AbuseIPDB</text>
+  <text x="1370" y="1080" text-anchor="middle" font-size="11" fill="#9aa1ac" font-style="italic">post-incident addition — console output only, not yet wired to Splunk</text>
+
+  <!-- runs standalone, independent of V.S 1 / V.S 2 -- reaches the real internet -->
+  <line x1="1230" y1="1100" x2="1230" y2="1148" stroke="#b5680d" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowAmber)"/>
+  <line x1="1510" y1="1100" x2="1510" y2="1148" stroke="#b5680d" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowAmber)"/>
+
+  <ellipse cx="1230" cy="1182" rx="115" ry="34" fill="#fff7ea" stroke="#b5680d" stroke-width="1.5"/>
+  <text x="1230" y="1178" text-anchor="middle" font-size="12" font-weight="600" fill="#8a4d09">Gmail IMAP</text>
+  <text x="1230" y="1195" text-anchor="middle" font-size="10" fill="#8a4d09">imap.gmail.com — real internet</text>
+
+  <ellipse cx="1510" cy="1182" rx="115" ry="34" fill="#fff7ea" stroke="#b5680d" stroke-width="1.5"/>
+  <text x="1510" y="1178" text-anchor="middle" font-size="12" font-weight="600" fill="#8a4d09">AbuseIPDB API</text>
+  <text x="1510" y="1195" text-anchor="middle" font-size="10" fill="#8a4d09">api.abuseipdb.com — real internet</text>
+
+  <text x="1160" y="1235" font-size="11" fill="#9aa1ac" font-style="italic">Unlike the rest of this lab (simulated V.S 1 / V.S 2 traffic), this component deliberately calls real external services.</text>
+
+  <!-- ================= LEGEND ================= -->
+  <g transform="translate(120,1280)">
+    <line x1="0" y1="0" x2="34" y2="0" stroke="#3a3f47" stroke-width="2"/>
+    <text x="42" y="4" font-size="12" fill="#3a3f47">Operational plane (V.S 1)</text>
+
+    <line x1="290" y1="0" x2="324" y2="0" stroke="#2564d6" stroke-width="2.5"/>
+    <text x="332" y="4" font-size="12" fill="#2564d6">tc mirror to sensor</text>
+
+    <line x1="560" y1="0" x2="594" y2="0" stroke="#1f8a54" stroke-width="2"/>
+    <text x="602" y="4" font-size="12" fill="#1f8a54">Management plane / NAT (V.S 2)</text>
+
+    <line x1="900" y1="0" x2="934" y2="0" stroke="#b5680d" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="942" y="4" font-size="12" fill="#b5680d">Real external service (not simulated)</text>
+  </g>
+  <text x="120" y="1310" font-size="12" fill="#c23a2e" font-style="italic">italic red = where the simulated attack rides these links</text>
+</svg>

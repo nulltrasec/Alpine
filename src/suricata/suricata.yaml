@@ -32,6 +32,16 @@ default-rule-path: /etc/suricata/rules
 rule-files:
   - local.rules
 
+# eve-log's `tls: ja4: true` below only controls whether JA4 is *written*
+# to the log -- fingerprint *calculation* has to be turned on separately
+# here, or the field is always empty regardless of the eve-log setting.
+app-layer:
+  protocols:
+    tls:
+      enabled: yes
+      ja3-fingerprints: yes
+      ja4-fingerprints: yes
+
 outputs:
   - fast:
       enabled: no

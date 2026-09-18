@@ -76,4 +76,4 @@ run
     * `PreAuthType`: `0`
     * `TicketEncryptionType`: `0x17` (RC4 downgrade)
     * `ClientAddress`: `10.0.0.15`
-* **Automated Containment**: Splunk ingests the EID 4768 alert, crosses the Risk-Based Alerting threshold (100 points), and fires the Micro-SOAR webhook. The SOAR server (`10.254.2.100`) connects to `10.0.0.15` via WinRM on V.S 2 and injects Windows Firewall rules, completely neutralizing the compromise in under 3 seconds.
+* **Automated Containment**: Splunk ingests the EID 4768 alert, crosses the Risk-Based Alerting threshold (100 points), and fires the Micro-SOAR webhook. The SOAR server (`10.254.2.100`) connects to `10.0.0.15` via WinRM on V.S 2 and injects Windows Firewall rules, completely neutralizing the compromise within minutes of the threshold breach (see incident-response-report.md for the measured MTTC).

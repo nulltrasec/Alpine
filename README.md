@@ -41,7 +41,11 @@ The entire environment operates on a virtualized **Arch Linux** hypervisor host,
 
 ### 4. Automated Micro-SOAR Containment
 * A lightweight Python/Flask webhook listener receives high-severity RBA triggers from Splunk.
-* Automatically executes `isolate_host.ps1` on target workstations via WinRM over V.S 2, cutting all inbound and outbound traffic while preserving an out-of-band forensic pinhole for the SOC.
+* Executes an inline PowerShell firewall-quarantine routine on target workstations via WinRM over V.S 2, cutting all inbound and outbound traffic while preserving an out-of-band forensic pinhole scoped to the SOC's gateway VIP.
+
+### 5. Post-Incident Detection: Phishing Email Triage
+* A standalone Python script polls a monitored mailbox over IMAP, extracts IP addresses from each message's `Received` header chain, and scores them against AbuseIPDB's reputation API.
+* Targets the same initial-access vector as the simulated attack chain (`invoice.docm` spearphishing -- see `attack-chain.md`); unlike the rest of the lab, it deliberately reaches real external services (Gmail IMAP, AbuseIPDB) rather than simulated lab traffic.
 
 ---
 
@@ -52,7 +56,8 @@ The entire environment operates on a virtualized **Arch Linux** hypervisor host,
 ├── README.md
 ├── assets/
 │   └── diagrams/
-│       └── topology.png                        # Handcrafted architectural network diagram
+│       ├── topology.png                        # Rendered architectural network diagram
+│       └── topology.svg                        # Editable SVG source for the diagram
 ├── docs/
 │   ├── 01-architecture/
 │   │   ├── network-topology.md                 # Complete breakdown of dual-switch lab design
@@ -64,7 +69,8 @@ The entire environment operates on a virtualized **Arch Linux** hypervisor host,
 │   └── 03-incident-response/
 │       ├── investigation-walkthrough.md        # Step-by-step forensic triage and pivot methodology
 │       ├── detection-engineering-rba.md        # Splunk RBA framework & SPL query breakdown
-│       └── incident-response-report.md         # Formal executive IR report & RCA
+│       ├── incident-response-report.md         # Formal executive IR report & RCA
+│       └── phishing-email-triage.md            # Post-incident email/IP triage control
 └── src/
     ├── network/
     │   ├── tc-tap-mirror.sh                    # Linux tc mirred packet cloning script
@@ -87,9 +93,12 @@ The entire environment operates on a virtualized **Arch Linux** hypervisor host,
     │   ├── inputs.conf                         # Ingestion stanzas for endpoint and network logs
     │   ├── outputs.conf                        # Forwarder configuration with gateway VIP
     │   └── savedsearches.conf                  # Detection searches, streamstats, and RBA master rule
-    └── soar/
-        ├── flask-soar-listener.py              # Micro-SOAR webhook listener service
-        └── isolate_host.ps1                    # PowerShell host isolation playbook
+    ├── soar/
+    │   ├── flask-soar-listener.py              # Micro-SOAR webhook listener + inline quarantine routine
+    │   └── requirements.txt                    # Listener dependencies (flask, pywinrm)
+    └── email-triage/
+        ├── phishing-ip-triage.py                # Post-incident IMAP + AbuseIPDB phishing triage script
+        └── requirements.txt                    # Script dependencies (requests)
 ```
 
 ---
@@ -98,7 +107,7 @@ The entire environment operates on a virtualized **Arch Linux** hypervisor host,
 
 * Install the SOAR listener's dependencies: `pip install -r src/soar/requirements.txt`
 * The listener refuses to start unless both `ALPINE_WINRM_PASS` (the WinRM account password) and `ALPINE_WEBHOOK_TOKEN` (a shared secret Splunk must send as `?token=...` on the webhook URL, see `src/splunk/savedsearches.conf`) are set in its environment -- there are no hardcoded fallback credentials.
-* WinRM cert validation is off by default (`ALPINE_WINRM_CERT_VALIDATION=ignore`) to match the lab's self-signed certs; set it to `validate` (with `ALPINE_WINRM_TRANSPORT=ssl`, `ALPINE_WINRM_PORT=5986`) for anything beyond this lab.
+* WinRM traffic runs unencrypted over the lab's isolated V.S 2 management plane (pywinrm's default `plaintext` transport) -- acceptable here because V.S 2 has zero adversary reachability by design (see `network-plumbing-tc-iptables.md`), but not a pattern to carry outside a lab like this.
 
 ---
 

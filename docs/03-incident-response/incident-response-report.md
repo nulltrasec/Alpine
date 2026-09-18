@@ -46,7 +46,7 @@ No domain compromise, privilege escalation, or unauthorized data exfiltration oc
 | `14:21:30` | SilkETW | SharpHound in-flight LDAP enumeration queries | YARA rule: `ASREPRoastScan` |
 | `14:22:10` | AD DC (WinEvent 4768) | Honeytoken AS-REP ticket requested (`PreAuthType: 0`) | Target: `svc_sql_prod_migration` |
 | `14:22:11` | Splunk SIEM | Master RBA correlation engine declares threshold breach | Risk Score: 100 |
-| `14:22:12` | Micro-SOAR | Flask webhook dispatches `isolate_host.ps1` via WinRM | Management Plane (V.S 2) |
+| `14:22:12` | Micro-SOAR | Flask webhook executes inline PowerShell quarantine routine via WinRM | Management Plane (V.S 2) |
 | `14:22:13` | `HR-01` (Firewall) | Draconian firewall block rules enforced | Inbound/Outbound severed |
 
 ---
@@ -83,3 +83,6 @@ No domain compromise, privilege escalation, or unauthorized data exfiltration oc
    * Configure Active Directory Group Policy: *Network security: Configure encryption types allowed for Kerberos* to strictly permit `AES128_HMAC_SHA1` and `AES256_HMAC_SHA1`.
 3. **Domain-Wide PowerShell Script Block Logging**:
    * Enable Windows Event ID 4104 via GPO across all domain workstations to eliminate memory blindspots caused by unmanaged PowerShell wrappers.
+
+### Detection Improvements Implemented Post-Incident
+* **Email-based phishing IP triage** (`src/email-triage/phishing-ip-triage.py`, see [phishing-email-triage.md](phishing-email-triage.md)): polls the mailbox for unread mail, extracts sender-path IPs from `Received` headers, and checks them against AbuseIPDB -- aimed at catching the `invoice.docm`-style delivery vector before a user opens the attachment, rather than after.

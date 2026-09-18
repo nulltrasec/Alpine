@@ -15,7 +15,7 @@ To achieve production-grade fidelity without enterprise hardware overhead, the e
 ### Host Multi-Role Segregation (Arch Linux)
 The Arch host simultaneously hosts the offensive adversary tools and the defensive SOC stack, logically separated into three distinct network interfaces:
 1. **Attacker Interface**: Operates Metasploit, web staging, and phishing infrastructure connected to **Virtual Switch 1 (V.S 1)**.
-2. **Promiscuous Sniffing Interface (`IP: N/A`)**: Completely passive network sensor interface receiving mirrored packets via Linux Traffic Control (`tc`). Runs **Zeek**, **Suricata IDS**, and continuous **dumpcap/Wireshark** packet captures with automated hourly rotation.
+2. **Promiscuous Sniffing Interface (`IP: N/A`)**: Completely passive network sensor interface receiving mirrored packets via Linux Traffic Control (`tc`). Runs **Zeek** and **Suricata IDS** continuously against the mirrored feed; **dumpcap/Wireshark** was used ad hoc against the same feed for packet-level verification (e.g. confirming JA4 Client Hello matches), not as an always-on, auto-rotating capture service -- no capture/rotation script is checked into this repo.
 3. **SOC Management Interface**: Manages log collection (**Splunk Indexer**) and automated incident response (**Python Micro-SOAR & WinRM**), communicating exclusively across **Virtual Switch 2 (V.S 2)**.
 
 ### Target Virtual Machines
@@ -35,7 +35,7 @@ The Arch host simultaneously hosts the offensive adversary tools and the defensi
 | **Role** | Operational / Victim Network | Out-of-Band SOC Management Plane |
 | **Traffic Types** | Web, Phishing, C2 Beaconing, Kerberos, LDAP | Splunk Universal Forwarder (9997), WinRM (5985) |
 | **Telemetry Hook** | Unidirectional Linux `tc mirred` Egress Tap | Stateful `iptables` DNAT & SNAT Stealth Engine |
-| **Monitoring Stack** | Mirrored to Zeek, Suricata, dumpcap | Ingested into Splunk, Controlled via Flask SOAR |
+| **Monitoring Stack** | Mirrored to Zeek, Suricata (dumpcap used ad hoc for verification) | Ingested into Splunk, Controlled via Flask SOAR |
 | **Security Boundary** | Untrusted / Adversary Accessible | Hardened / Zero Direct Ingress from Adversary |
 
 ---
